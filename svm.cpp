@@ -8,10 +8,38 @@ using namespace cv::ml;
 int main(int, char**)
 {
     // Set up training data
-    int labels[4] = {1, -1, -1, -1};
-    float trainingData[4][2] = { {501, 10}, {255, 10}, {501, 255}, {10, 501} };
-    Mat trainingDataMat(4, 2, CV_32F, trainingData);
-    Mat labelsMat(4, 1, CV_32SC1, labels);
+    //int labels[4] = {1, -1, -1, -1};
+    //float trainingData[4][2] = { {501, 10}, {255, 10}, {501, 255}, {10, 501} };
+
+    int *labels = NULL;
+    float **trainingData = NULL;
+    int row = 0;
+    int qtParameters = 2;
+    FILE *input_dataset = fopen("train_dataset.txt", "a+");
+
+    while(!feof(input_dataset)){
+        trainingData = (float **) realloc(trainingData, (row + 1) * sizeof(float *));
+        labels = (int *) realloc(labels, (row + 1) * sizeof(int));
+        trainingData[row] = (float *) malloc(qtParameters * sizeof(float));
+
+        for(int x = 0; x < qtParameters; x++){
+            fscanf(input_dataset, "%f", &trainingData[row][x]);
+        }
+
+        fscanf(input_dataset, "%d", &labels[row]);
+        row++;
+    }
+
+    printf("%d %d\n", row, qtParameters);
+    for(int x = 0; x < row; x++){
+        for(int y = 0; y < qtParameters; y++){
+            printf("%f ", trainingData[x][y]);
+        }
+        printf("%d\n", labels[x]);
+    }
+
+    Mat trainingDataMat(row, qtParameters, CV_32F, trainingData);
+    Mat labelsMat(row, 1, CV_32SC1, labels);
     // Train the SVM
     Ptr<SVM> svm = SVM::create();
     svm->setType(SVM::C_SVC);
